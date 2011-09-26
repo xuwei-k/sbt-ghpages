@@ -32,6 +32,9 @@ Create a project/plugins/project/Build.scala file that looks like the following:
 
 Then in your build.sbt file, simply add:
 
+
+    seq(site.settings:_*)
+
     seq(ghpages.settings:_*)
     
     ghpages.gitRemoteRepo := "git@github.com:{your username}/{your project}.git"
@@ -40,11 +43,33 @@ Then in your build.sbt file, simply add:
 
 The ghpages plugin will copy anything in the target/site directory into the ghpages repository root directory.  To ensure that your site is built before things get copied, a dummy task called "gen-site" (or `genSite`) is provided.   The ghpages plugin does not care what other plugins or tasks generate a site, only that you add an appropriate dependency on that task so that it occurs *before* the site is copied to github.
 
-For example, if you were using the sbt-lwm-plugin to generate HTML from markdown, you could use the following config line:
+For example, if you were using the sbt-lwm-plugin to generate HTML from markdown, you could use the following config:
 
-    ghpages.genSite <<= (ghpages.genSite, LWM.translate in LWM.Config) map ((_,_) => ())
+    seq(org.clapper.sbt.lwm.LWM.lwmSettings: _*)
+    
+    LWM.sourceFiles in LWM.Config <++= baseDirectory(d => (d / "src" / "site" ** "*.md").get)
+    
+    LWM.targetDirectory in LWM.Config <<= target(_ / "site")
+    
+    SiteKeys.siteMappings <<= (SiteKeys.siteMappings, LWM.translate in LWM.Config, LWM.targetDirectory in LWM.Config) map { (mappings, _, dir) => 
+      // TODO - less hacky solution!
+      mappings ++ (dir ** "*.html" x relativeTo(dir))
+    }
 
-It is important to have the genSite setting depend on the previous so you can continue to add code generation tasks to the dependencies.
+The `SiteKeys.siteMappings` key is a convenience reference to `mappings in SiteKeys.site`.  The ghpages plugin by default pushes every file in the mapping for `site` into the `ghpages` branch on github.  
+
+## Publishing an API ##
+
+By Default, the site plugin includes a mapping to place all generated API documentation under the `latest/api` directory in ghpages.
+
+## Multi-module projects ##
+
+The ghpages and site plugins can still be used for mutli-module projects.  In your `project/<?>.scala` file, make sure the `ghpages` settings are only included in the project which will be creating the main site.   You can use SBT's powerful setting features to modify and merge the site mappings from individual projects to construct the total project website.
+
+TODO - Examples.
+
+
+
 
 
 ## LICENSE ##

@@ -1,81 +1,54 @@
 import sbt._
 import Keys._
+import GitKeys.gitRemoteRepo
+import SiteKeys.siteMappings
 
+// Plugin to make use of githup pages.
 object GhPages extends Plugin {
-
+  // TODO - Add some sort of locking to the repository so only one thread accesses it at a time...
   object ghpages {
-    val Config = config("ghpages") extend(Runtime)
-    lazy val pagesRepository = SettingKey[File]("pages-repository") in Config
-    lazy val updatedPagesRepository = TaskKey[File]("updated-pages-repository") in Config
-    lazy val siteDirectory = SettingKey[File]("site-directory") in Config
-    lazy val copyAPIDoc = TaskKey[File]("copy-api-doc") in Config
-    lazy val copySite = TaskKey[File]("copy-site") in Config
-    lazy val genSite = TaskKey[Unit]("gen-site") in Config
-    lazy val cleanSite = TaskKey[Unit]("clean-site") in Config
-    lazy val pushAPIDoc = TaskKey[Unit]("push-api-doc") in Config
-    lazy val pushSite = TaskKey[Unit]("push-site") in Config
-    lazy val gitRemoteRepo = SettingKey[String]("git-remote-repo") in Config
+    lazy val repository = SettingKey[File]("ghpages-repository", "sandbox environment where git project ghpages branch is checked out.")
+    lazy val updatedRepository = TaskKey[File]("ghpages-updated-repository", "Updates the local ghpages branch on the sandbox repository.")
+    // Note:  These are *only* here in the event someone wants to completely bypass the sbt-site-plugin.
+    lazy val privateMappings = mappings in synchLocal
+    lazy val synchLocal = TaskKey[File]("ghpages-synch-local", "Copies the locally generated site into the local ghpages repository.")
+    lazy val cleanSite = TaskKey[Unit]("ghpages-clean-site", "Cleans the staged repository for ghpages branch.")
+    lazy val pushSite = TaskKey[Unit]("ghpages-push-site", "Pushes a generated site into the ghpages branch.  Will not clean the branch unless you run clean-site first.")
 
-    def settings: Seq[Setting[_]] = Seq(
-      //gitRemoteRepo := "git@github.com:jsuereth/scala-arm.git",
-      pagesRepository <<= (name,organization) apply ((n,o) => file(System.getProperty("user.home")) / ".sbt" / "ghpages" / o / n),
-      updatedPagesRepository <<= updatedRepo(pagesRepository, gitRemoteRepo, Some("gh-pages")),
-      pushAPIDoc <<= pushAPIDoc0,
-      pushSite <<= pushAPIDoc map (_ => ()), // Do nothing but push API docs for now.... TODO - Allow more on the site...
-      siteDirectory <<= target(_ / "site"),
-      copyAPIDoc <<= copyAPIDoc0,
-      copySite <<= copySite0,
-      cleanSite <<= cleanSite0,
-      // For now, assume nothing and let projects override.
-      genSite := ()
+    // TODO - Should we wire into default settings?
+    val settings: Seq[Setting[_]] = Seq(
+      //example: gitRemoteRepo := "git@github.com:jsuereth/scala-arm.git",
+      repository <<= (name,organization) apply ((n,o) => file(System.getProperty("user.home")) / ".sbt" / "ghpages" / o / n),
+      updatedRepository <<= updatedRepo(repository, gitRemoteRepo, Some("gh-pages")),
+      pushSite <<= pushSite0,
+      privateMappings <<= siteMappings.identity,
+      synchLocal <<= synchLocal0,
+      cleanSite <<= cleanSite0
     )
     private def updatedRepo(repo: ScopedSetting[File], remote: ScopedSetting[String], branch: Option[String]) =
-       (repo, remote, streams) map { (local, uri, s) => updated(remote = uri, cwd = local, branch = branch, log = s.log); local }
+       (repo, remote, GitKeys.gitRunner, streams) map { (local, uri, git, s) => git.updated(remote = uri, cwd = local, branch = branch, log = s.log); local }
 
-    private def copySite0 = (siteDirectory, updatedPagesRepository, genSite, streams) map { (dir, repo, _, s) =>
-      // TODO - Should we even attempt to clean?
-      IO.copyDirectory(dir, repo)
+    private def synchLocal0 = (privateMappings, updatedRepository, GitKeys.gitRunner, streams) map { (mappings, repo, git, s) =>
+      // TODO - an sbt.Synch with cache of previous mappings to make this more efficient. */
+      val betterMappings = mappings map { case (file, target) => (file, repo / target) }
+      // First, remove 'stale' files.
+      cleanSiteForRealz(repo, git, s)
+      // Now copy files.
+      IO.copy(betterMappings)
       repo
     }
 
-    private def cleanSite0 = (updatedPagesRepository, streams) map { (dir, s) =>
-      val toClean = IO.listFiles(dir).map(_.getAbsolutePath).filter(!_.contains("\\.git")).toList
-      git(("rm" :: "-r" :: "--ignore-unmatch" :: toClean) :_*)(dir, s.log)
+    private def cleanSite0 = (updatedRepository, GitKeys.gitRunner, streams) map { (dir, git, s) =>
+      cleanSiteForRealz(dir, git, s)
+    }
+    private def cleanSiteForRealz(dir: File, git: GitRunner, s: TaskStreams): Unit = {
+      val toClean = IO.listFiles(dir).filterNot(_.getName == ".git").map(_.getAbsolutePath).toList
+      if(!toClean.isEmpty)
+        git(("rm" :: "-r" :: "-f" :: "--ignore-unmatch" :: toClean) :_*)(dir, s.log)
       ()
     }
+    private def pushSite0 = (synchLocal, updatedRepository, GitKeys.gitRunner, streams) map { (_, repo, git, s) => git.commitAndPush("updated site")(repo, s.log) }
 
-    private def copyAPIDoc0 = (updatedPagesRepository, doc in Compile, streams) map { (repo, newAPI, s) =>
-      git("rm", "-r", "--ignore-unmatch", "latest")(repo, s.log)
-      if(repo / "latest" exists) {
-        IO.delete(repo / "latest")
-      }
-      IO.copyDirectory(newAPI, repo / "latest" / "api")
-      //IO.copyDirectory(newSXR, repo / "latest" / "sxr")
-      repo
-    }
-    private def pushAPIDoc0 = (copyAPIDoc, streams) map { (repo, s) => commitAndPush("updated api documentation")(repo, s.log) }
-    private def commitAndPush(msg: String, tag: Option[String] = None)(repo: File, log: Logger) {
-      git("add", ".")(repo, log)
-      git("commit", "-m", msg, "--allow-empty")(repo, log)
-      for(tagString <- tag) git("tag", tagString)(repo, log)
-      push(repo, log)
-    }
-    private def push(cwd: File, log: Logger) = git("push")(cwd, log)
-    private def pull(cwd: File, log: Logger) = git("pull")(cwd, log)
-    private def updated(remote: String, branch: Option[String], cwd: File, log: Logger): Unit =
-      if(cwd.exists) pull(cwd, log)
-      else branch match {
-        case None => git("clone", remote, ".")(cwd, log)
-        case Some(b) => git("clone", "-b", b, remote, ".")(cwd, log)
-      }
-
-    private def git(args: String*)(cwd: File, log: Logger): Unit = {
-      IO.createDirectory(cwd)
-      val full = "git" +: args
-      log.info(cwd + "$ " + full.mkString(" "))
-      val code = Process(full, cwd) ! log
-      if(code != 0) error("Nonzero exit code for git " + args.take(1).mkString + ": " + code)
-    }
 
     /** TODO - Create ghpages in the first place if it doesn't exist.
         $ cd /path/to/fancypants
