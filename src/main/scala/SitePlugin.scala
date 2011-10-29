@@ -1,3 +1,5 @@
+package com.jsuereth.sbtsite
+
 import sbt._
 import Keys._
 

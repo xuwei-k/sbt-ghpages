@@ -37,7 +37,7 @@ Then in your build.sbt file, simply add:
 
     seq(ghpages.settings:_*)
     
-    ghpages.gitRemoteRepo := "git@github.com:{your username}/{your project}.git"
+    git.remoteRepo := "git@github.com:{your username}/{your project}.git"
     
 ## Creating a Home page ##
 

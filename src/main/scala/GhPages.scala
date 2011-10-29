@@ -1,7 +1,10 @@
+package com.jsuereth.ghpages
+
 import sbt._
 import Keys._
+import com.jsuereth.git.{GitKeys,GitRunner}
 import GitKeys.gitRemoteRepo
-import SiteKeys.siteMappings
+import com.jsuereth.sbtsite.SiteKeys.siteMappings
 
 // Plugin to make use of githup pages.
 object GhPages extends Plugin {
