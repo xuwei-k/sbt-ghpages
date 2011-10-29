@@ -31,7 +31,6 @@ object GhPages extends Plugin {
     )
     private def updatedRepo(repo: ScopedSetting[File], remote: ScopedSetting[String], branch: ScopedSetting[Option[String]]) =
        (repo, remote, branch, GitKeys.gitRunner, streams) map { (local, uri, branch, git, s) =>
-         s.log.info("Cloning %s to %s#%s" format(uri, local, branch.get))
          git.updated(remote = uri, cwd = local, branch = branch, log = s.log)
          local
      }
