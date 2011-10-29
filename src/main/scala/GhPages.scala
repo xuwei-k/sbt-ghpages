@@ -3,7 +3,7 @@ package com.jsuereth.ghpages
 import sbt._
 import Keys._
 import com.jsuereth.git.{GitKeys,GitRunner}
-import GitKeys.gitRemoteRepo
+import GitKeys.{gitBranch, gitRemoteRepo}
 import com.jsuereth.sbtsite.SiteKeys.siteMappings
 
 // Plugin to make use of githup pages.
@@ -22,14 +22,19 @@ object GhPages extends Plugin {
     val settings: Seq[Setting[_]] = Seq(
       //example: gitRemoteRepo := "git@github.com:jsuereth/scala-arm.git",
       repository <<= (name,organization) apply ((n,o) => file(System.getProperty("user.home")) / ".sbt" / "ghpages" / o / n),
-      updatedRepository <<= updatedRepo(repository, gitRemoteRepo, Some("gh-pages")),
+      gitBranch in updatedRepository <<= gitBranch ?? Some("gh-pages"),
+      updatedRepository <<= updatedRepo(repository, gitRemoteRepo, gitBranch in updatedRepository),
       pushSite <<= pushSite0,
       privateMappings <<= siteMappings.identity,
       synchLocal <<= synchLocal0,
       cleanSite <<= cleanSite0
     )
-    private def updatedRepo(repo: ScopedSetting[File], remote: ScopedSetting[String], branch: Option[String]) =
-       (repo, remote, GitKeys.gitRunner, streams) map { (local, uri, git, s) => git.updated(remote = uri, cwd = local, branch = branch, log = s.log); local }
+    private def updatedRepo(repo: ScopedSetting[File], remote: ScopedSetting[String], branch: ScopedSetting[Option[String]]) =
+       (repo, remote, branch, GitKeys.gitRunner, streams) map { (local, uri, branch, git, s) =>
+         s.log.info("Cloning %s to %s#%s" format(uri, local, branch.get))
+         git.updated(remote = uri, cwd = local, branch = branch, log = s.log)
+         local
+     }
 
     private def synchLocal0 = (privateMappings, updatedRepository, GitKeys.gitRunner, streams) map { (mappings, repo, git, s) =>
       // TODO - an sbt.Synch with cache of previous mappings to make this more efficient. */
