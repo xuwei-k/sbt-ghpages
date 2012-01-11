@@ -23,9 +23,8 @@ object SitePlugin extends Plugin {
       addMappingsToSiteDir(mappings in packageDoc in Compile, "latest/api"),
       siteDirectory <<= target(_ / "site"),
       siteSourceDirectory <<= sourceDirectory(_ / "site"),
-      // TODO - Just include everything?
-      sourceFilter in makeSite := "*.html" | "*.css" | "*.png" | "*.jpg" | "*.gif" | "*.js" | "*.swf",
-      siteMappings <++= (sourceFilter in makeSite, siteSourceDirectory) map { (incs, dir ) =>
+      includeFilter in makeSite := "*.html" | "*.css" | "*.png" | "*.jpg" | "*.gif" | "*.js" | "*.swf",
+      siteMappings <++= (includeFilter in makeSite, siteSourceDirectory) map { (incs, dir ) =>
         dir ** incs x relativeTo(dir)
       },
       makeSite <<= (siteDirectory, siteMappings) map { (dir, maps) =>
@@ -39,7 +38,7 @@ object SitePlugin extends Plugin {
       }
     )
     /** Convenience functions to add a task of mappings to a site under a nested directory. */
-    def addMappingsToSiteDir(mappings: ScopedTask[Seq[(File,String)]], nestedDirectory: String) =
+    def addMappingsToSiteDir(mappings: TaskKey[Seq[(File,String)]], nestedDirectory: String) =
       siteMappings <++= mappings map { m =>
         for((f, d) <- m) yield (f, nestedDirectory + "/" + d)
       }

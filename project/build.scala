@@ -1,6 +1,10 @@
 import sbt._
+import Keys._
 object ghpages extends Build {
   override def projects = Seq(root)
-  lazy val root = Project("sbt-ghpages-plugin", file(".")) dependsOn(git)
-  lazy val git = RootProject(uri("git://github.com/jsuereth/sbt-git-plugin.git"))
+  lazy val root = Project("sbt-ghpages-plugin", file(".")) settings(
+     resolvers += Resolver.url("scalasbt", new URL("http://scalasbt.artifactoryonline.com/scalasbt/sbt-plugin-releases"))(Resolver.ivyStylePatterns),
+     resolvers += "jgit-repo" at "http://download.eclipse.org/jgit/maven",
+     addSbtPlugin("com.jsuereth" % "sbt-git-plugin" % "0.4")
+  )
 }

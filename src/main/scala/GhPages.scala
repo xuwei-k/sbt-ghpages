@@ -24,11 +24,11 @@ object GhPages extends Plugin {
       repository <<= (name,organization) apply ((n,o) => file(System.getProperty("user.home")) / ".sbt" / "ghpages" / o / n),
       updatedRepository <<= updatedRepo(repository, gitRemoteRepo, Some("gh-pages")),
       pushSite <<= pushSite0,
-      privateMappings <<= siteMappings.identity,
+      privateMappings <<= siteMappings,
       synchLocal <<= synchLocal0,
       cleanSite <<= cleanSite0
     )
-    private def updatedRepo(repo: ScopedSetting[File], remote: ScopedSetting[String], branch: Option[String]) =
+    private def updatedRepo(repo: SettingKey[File], remote: SettingKey[String], branch: Option[String]) =
        (repo, remote, GitKeys.gitRunner, streams) map { (local, uri, git, s) => git.updated(remote = uri, cwd = local, branch = branch, log = s.log); local }
 
     private def synchLocal0 = (privateMappings, updatedRepository, GitKeys.gitRunner, streams) map { (mappings, repo, git, s) =>
