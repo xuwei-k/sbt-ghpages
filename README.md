@@ -1,6 +1,8 @@
 # xsbt-ghpages-plugin #
 
-The github pages plugin for SBT provides support for auto-generating a project website and pushing to github pages.   Out of the box is will publish your scaladoc APIs to github pages.
+The github pages plugin for SBT provides support for auto-generating a project website and pushing to github pages.
+
+Please see the [sbt-site-plugin](http://github.com/sbt/sbt-site-plugin) for information on how you can customize the generation of a project website.
 
 ## Creating ghpages branch ##
 
@@ -21,56 +23,25 @@ Once this is done, you can begin using the plugin.
 
 ## Adding to your project ##
 
-Create a project/plugins/project/Build.scala file that looks like the following:
+Create a `project/plugins.sbt` file that looks like the following:
 
-    import sbt._
-    object PluginDef extends Build {
-      override def projects = Seq(root)
-      lazy val root = Project("plugins", file(".")) dependsOn(ghpages)
-      lazy val ghpages = uri("git://github.com/jsuereth/xsbt-ghpages-plugin.git")
-    }
+
+    addSbtPlugin("com.jsuereth" % "sbt-ghpages-plugin" % "0.4.0")
+
 
 Then in your build.sbt file, simply add:
 
 
-    seq(site.settings:_*)
+    site.settings
 
-    seq(ghpages.settings:_*)
+    ghpages.settings
     
     git.remoteRepo := "git@github.com:{your username}/{your project}.git"
-    
-## Creating a Home page ##
-
-The ghpages plugin will copy anything in the target/site directory into the ghpages repository root directory.  To ensure that your site is built before things get copied, a dummy task called "gen-site" (or `genSite`) is provided.   The ghpages plugin does not care what other plugins or tasks generate a site, only that you add an appropriate dependency on that task so that it occurs *before* the site is copied to github.
-
-For example, if you were using the sbt-lwm-plugin to generate HTML from markdown, you could use the following config:
-
-    seq(org.clapper.sbt.lwm.LWM.lwmSettings: _*)
-    
-    LWM.sourceFiles in LWM.Config <++= baseDirectory(d => (d / "src" / "site" ** "*.md").get)
-    
-    LWM.targetDirectory in LWM.Config <<= target(_ / "site")
-    
-    SiteKeys.siteMappings <<= (SiteKeys.siteMappings, LWM.translate in LWM.Config, LWM.targetDirectory in LWM.Config) map { (mappings, _, dir) => 
-      // TODO - less hacky solution!
-      mappings ++ (dir ** "*.html" x relativeTo(dir))
-    }
-
-The `SiteKeys.siteMappings` key is a convenience reference to `mappings in SiteKeys.site`.  The ghpages plugin by default pushes every file in the mapping for `site` into the `ghpages` branch on github.  
-
-## Publishing an API ##
-
-By Default, the site plugin includes a mapping to place all generated API documentation under the `latest/api` directory in ghpages.
-
-## Multi-module projects ##
-
-The ghpages and site plugins can still be used for mutli-module projects.  In your `project/<?>.scala` file, make sure the `ghpages` settings are only included in the project which will be creating the main site.   You can use SBT's powerful setting features to modify and merge the site mappings from individual projects to construct the total project website.
-
-TODO - Examples.
 
 
+## Pushing your project ##
 
-
+Simply run the `ghpages-push-site` task to publish your website.
 
 ## LICENSE ##
 
