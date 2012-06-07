@@ -11,6 +11,7 @@ object GhPages extends Plugin {
   // TODO - Add some sort of locking to the repository so only one thread accesses it at a time...
   object ghpages {
     lazy val repository = SettingKey[File]("ghpages-repository", "sandbox environment where git project ghpages branch is checked out.")
+    lazy val ghpagesNoJekyll = SettingKey[Boolean]("ghpages-no-jekyll", "If this flag is set, ghpages will automatically generate a .nojekyll file to prevent github from running jekyll on pushed sites.")
     lazy val updatedRepository = TaskKey[File]("ghpages-updated-repository", "Updates the local ghpages branch on the sandbox repository.")
     // Note:  These are *only* here in the event someone wants to completely bypass the sbt-site-plugin.
     lazy val privateMappings = mappings in synchLocal
@@ -19,8 +20,9 @@ object GhPages extends Plugin {
     lazy val pushSite = TaskKey[Unit]("ghpages-push-site", "Pushes a generated site into the ghpages branch.  Will not clean the branch unless you run clean-site first.")
 
     // TODO - Should we wire into default settings?
-    val settings: Seq[Setting[_]] = Seq(
+    lazy val settings: Seq[Setting[_]] = Seq(
       //example: gitRemoteRepo := "git@github.com:jsuereth/scala-arm.git",
+      ghpagesNoJekyll := true,
       repository <<= (name,organization) apply ((n,o) => file(System.getProperty("user.home")) / ".sbt" / "ghpages" / o / n),
       gitBranch in updatedRepository <<= gitBranch ?? Some("gh-pages"),
       updatedRepository <<= updatedRepo(repository, gitRemoteRepo, gitBranch in updatedRepository),
@@ -35,13 +37,14 @@ object GhPages extends Plugin {
          local 
     }
 
-    private def synchLocal0 = (privateMappings, updatedRepository, GitKeys.gitRunner, streams) map { (mappings, repo, git, s) =>
+    private def synchLocal0 = (privateMappings, updatedRepository, ghpagesNoJekyll, GitKeys.gitRunner, streams) map { (mappings, repo, noJekyll, git, s) =>
       // TODO - an sbt.Synch with cache of previous mappings to make this more efficient. */
       val betterMappings = mappings map { case (file, target) => (file, repo / target) }
       // First, remove 'stale' files.
       cleanSiteForRealz(repo, git, s)
       // Now copy files.
       IO.copy(betterMappings)
+      if(noJekyll) IO.touch(repo / ".nojekyll")
       repo
     }
 
@@ -54,7 +57,7 @@ object GhPages extends Plugin {
         git(("rm" :: "-r" :: "-f" :: "--ignore-unmatch" :: toClean) :_*)(dir, s.log)
       ()
     }
-    private def pushSite0 = (synchLocal, updatedRepository, GitKeys.gitRunner, streams) map { (_, repo, git, s) => git.commitAndPush("updated site")(repo, s.log) }
+    private def pushSite0 = (synchLocal, GitKeys.gitRunner, streams) map { (repo, git, s) => git.commitAndPush("updated site")(repo, s.log) }
 
 
     /** TODO - Create ghpages in the first place if it doesn't exist.
