@@ -9,7 +9,7 @@ on how you can customize the generation of a project website.
 
 ## Creating ghpages branch ##
 
-To use this pluign, you must first create a ghpages branch on github.  To do so:
+To use this plugin, you must first create a ghpages branch on github.  To do so:
 
         $ cd /path/to/tmpdirectory
         $ git clone {your project}
