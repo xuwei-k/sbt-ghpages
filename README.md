@@ -31,7 +31,7 @@ Create a `project/plugins.sbt` file that looks like the following:
 
     resolvers += "jgit-repo" at "http://download.eclipse.org/jgit/maven"
 
-    addSbtPlugin("com.typesafe.sbt" % "sbt-ghpages" % "0.5.2")
+    addSbtPlugin("com.typesafe.sbt" % "sbt-ghpages" % "0.5.3")
 
 
 Then in your build.sbt file, simply add:
