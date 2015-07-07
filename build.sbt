@@ -4,7 +4,7 @@ name := "sbt-ghpages"
 
 organization := "com.typesafe.sbt"
 
-version := "0.5.3"
+version := "0.5.4-SNAPSHOT"
 
 publishMavenStyle := false
 
