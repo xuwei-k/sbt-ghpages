@@ -21,6 +21,10 @@ To use this plugin, you must first create a ghpages branch on github.  To do so:
         $ git add .
         $ git commit -a -m "First pages commit"
         $ git push origin gh-pages
+        $ git checkout master
+
+Remember to checkout your normal development branch after pushing to `gh-pages`, in the
+example above we assume `master`, but if you use another development branch, switch back to that.
 
 Once this is done, you can begin using the plugin.
 
@@ -47,6 +51,47 @@ Then in your build.sbt file, simply add:
 
 Simply run the `ghpages-push-site` task to publish your website.
 
+## Publishing Scaladoc
+
+A common use for sbt-ghpages is to automate the publishing of scaladoc. If you wish to
+use it for this, first add another setting to your `build.sbt` after the `site.settings` from above:
+
+    site.includeScaladoc()
+
+After using `ghpages-push-site` you should then find your scaladoc at
+
+`http://{your username}.github.io/{your project}/latest/api`
+
+To provide a better experience for people using your project, it is recommended that you
+also add a redirect page in `src/site/index.html` that automatically redirects to either
+the above link, or even better, to a good starting point in your documentation, otherwise
+people visiting the `http://{your username}.github.io/{your project}` will just get a 404.
+
+Here's an example `src/site/index.html` you can use as a starting point:
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Project Documentation</title>
+    <script language="JavaScript">
+    <!--
+    function doRedirect()
+    {
+        window.location.replace("latest/api");
+    }
+
+    doRedirect();
+    //-->
+    </script>
+</head>
+<body>
+<a href="latest/api">Go to the project documentation
+</a>
+</body>
+</html>
+```
 
 ## LICENSE ##
 
