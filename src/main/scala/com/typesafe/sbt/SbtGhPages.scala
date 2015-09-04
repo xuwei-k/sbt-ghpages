@@ -28,7 +28,11 @@ object SbtGhPages extends Plugin {
     lazy val settings: Seq[Setting[_]] = Seq(
       //example: gitRemoteRepo := "git@github.com:jsuereth/scala-arm.git",
       ghpagesNoJekyll := true,
-      repository <<= (name,organization) apply ((n,o) => file(System.getProperty("user.home")) / ".sbt" / "ghpages" / o / n),
+      repository := {
+        val buildHash: String =
+          Hash.toHex(Hash.apply(sbt.Keys.thisProjectRef.value.build.toASCIIString))
+        file(System.getProperty("user.home")) / ".sbt" / "ghpages" / buildHash /  organization.value / name.value
+      },
       gitBranch in updatedRepository <<= gitBranch ?? Some("gh-pages"),
       updatedRepository <<= updatedRepo(repository, gitRemoteRepo, gitBranch in updatedRepository),
       pushSite <<= pushSite0,
