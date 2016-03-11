@@ -1,71 +1,106 @@
 # sbt-ghpages #
 
-The github pages plugin for sbt provides support for auto-generating a project
-website and pushing to github pages.
+The GitHub Pages plugin for sbt makes it simple to publish a project website to
+[GitHub Pages](https://pages.github.com/).
 
-Please see the [sbt-site plugin](http://github.com/sbt/sbt-site) for information
-on how you can customize the generation of a project website.
+First, you need a site to publish, or you may wish to start simply with your
+project's Scaladoc API documentation. The [sbt-site plugin] has you covered: it
+can help to manage several popular static site generation tools automatically
+from sbt.
 
+Start by setting up `sbt-site`, and once you have it locally generating a site
+and/or Scaladoc to your liking, `sbt-ghpages` will integrate to publish it on
+the web with GitHub Pages where it will be served at
+`http://{your username}.github.io/{your project}/`.
 
-## Creating ghpages branch ##
-
-To use this plugin, you must first create a ghpages branch on github.  To do so:
-
-        $ cd /path/to/tmpdirectory
-        $ git clone {your project}
-        $ cd {your project}
-        $ git symbolic-ref HEAD refs/heads/gh-pages
-        $ rm .git/index
-        $ git clean -fdx
-        $ echo "My GitHub Page" > index.html
-        $ git add .
-        $ git commit -a -m "First pages commit"
-        $ git push origin gh-pages
-        $ git checkout master
-
-Remember to checkout your normal development branch after pushing to `gh-pages`, in the
-example above we assume `master`, but if you use another development branch, switch back to that.
-
-Once this is done, you can begin using the plugin.
+[sbt-site plugin]: http://github.com/sbt/sbt-site
 
 
-## Adding to your project ##
+## Adding the plugin to your project ##
 
 Create a `project/plugins.sbt` file that looks like the following:
 
-    resolvers += "jgit-repo" at "http://download.eclipse.org/jgit/maven"
+```scala
+resolvers += "jgit-repo" at "http://download.eclipse.org/jgit/maven"
 
-    addSbtPlugin("com.typesafe.sbt" % "sbt-ghpages" % "0.5.4")
+addSbtPlugin("com.typesafe.sbt" % "sbt-ghpages" % "0.5.4")
+```
+
+Then in your `build.sbt` file, simply add:
+
+```scala
+ghpages.settings
+
+git.remoteRepo := "git@github.com:{your username}/{your project}.git"
+```
 
 
-Then in your build.sbt file, simply add:
+## Initializing the gh-pages branch ##
 
-    site.settings
+GitHub Pages works by processing the contents of a special branch in your
+project repository named `gh-pages` and then serving your static files.
 
-    ghpages.settings
+Before using `sbt-ghpages`, you must [create the `gh-pages` branch in your
+repository][create branch] and push the branch to GitHub. The quick steps are:
 
-    git.remoteRepo := "git@github.com:{your username}/{your project}.git"
+    # Using a fresh, temporary clone is safest for this procedure
+    $ pushd /tmp
+    $ git clone git@github.com:youruser/yourproject.git
+    $ cd yourproject
+
+    # Create branch with no history or content
+    $ git checkout --orphan gh-pages
+    $ git rm -rf .
+
+    # Establish the branch existence
+    $ git commit --allow-empty -m "Initialize gh-pages branch"
+    $ git push origin gh-pages
+
+    # Return to original working copy clone, we're finished with the /tmp one
+    $ popd
+    $ rm -rf /tmp/yourproject
+
+Now that this is done, you can begin using the plugin with sbt.
+
+[create branch]: https://help.github.com/articles/creating-project-pages-manually/
 
 
-## Pushing your project ##
+## Publishing your site ##
 
-Simply run the `ghpages-push-site` task to publish your website.
+Simply run the `ghpagesPushSite` task to publish your website.
+
+### How it works
+
+Behind the scenes, `sbt-ghpages` will create a new "sandbox" clone of your Git
+repository, stashed away beneath `~/.sbt/ghpages`. Whenever you run `sbt
+ghpagesPushSite` it will copy your site content into that sandbox repository,
+commit it to the `gh-pages` branch, and push the branch to GitHub.
+
+The sandbox repo approach spares you from doing the `gh-pages` checkout/commit
+dance yourself each time you update your site content, while avoiding any
+mistakes with dirty or untracked files in your normal working copy clone.
+
 
 ## Publishing Scaladoc
 
-A common use for sbt-ghpages is to automate the publishing of scaladoc. If you wish to
-use it for this, first add another setting to your `build.sbt` after the `site.settings` from above:
+A common use for `sbt-ghpages` is to automate the publishing of Scaladoc. If you wish to
+use it for this, first ask `sbt-site` to generate your Scaladoc by adding this
+setting to your `build.sbt`:
 
-    site.includeScaladoc()
+```scala
+site.includeScaladoc()
+```
 
-After using `ghpages-push-site` you should then find your scaladoc at
+After using `ghpagesPushSite` you should find your Scaladoc at:
 
 `http://{your username}.github.io/{your project}/latest/api`
 
-To provide a better experience for people using your project, it is recommended that you
-also add a redirect page in `src/site/index.html` that automatically redirects to either
-the above link, or even better, to a good starting point in your documentation, otherwise
-people visiting the `http://{your username}.github.io/{your project}` will just get a 404.
+If you aren't publishing any other content to the root of your project site, it
+is recommended that you add a redirect to provide a better experience for users
+visiting it. You can do this by creating a page in `src/site/index.html` that
+automatically redirects to either the above link, or even better, to a good
+starting point in your documentation. Otherwise, people visiting `http://{your
+username}.github.io/{your project}` will just get a 404.
 
 Here's an example `src/site/index.html` you can use as a starting point:
 
