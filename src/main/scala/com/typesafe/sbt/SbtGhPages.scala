@@ -38,30 +38,33 @@ object SbtGhPages extends Plugin {
       pushSite <<= pushSite0,
       privateMappings <<= siteMappings,
       synchLocal <<= synchLocal0,
-      cleanSite <<= cleanSite0
-    )
+      cleanSite <<= cleanSite0,
+      includeFilter in cleanSite := AllPassFilter,
+      excludeFilter in cleanSite := NothingFilter)
     private def updatedRepo(repo: SettingKey[File], remote: SettingKey[String], branch: SettingKey[Option[String]]) =
        (repo, remote, branch, GitKeys.gitRunner, streams) map { (local, uri, branch, git, s) =>
          git.updated(remote = uri, cwd = local, branch = branch, log = s.log);
          local
     }
 
-    private def synchLocal0 = (privateMappings, updatedRepository, ghpagesNoJekyll, GitKeys.gitRunner, streams) map { (mappings, repo, noJekyll, git, s) =>
+    private def synchLocal0 = (privateMappings, updatedRepository, ghpagesNoJekyll, GitKeys.gitRunner, streams, includeFilter in cleanSite, excludeFilter in cleanSite) map {
+      (mappings, repo, noJekyll, git, s, incl, excl) =>
       // TODO - an sbt.Synch with cache of previous mappings to make this more efficient. */
       val betterMappings = mappings map { case (file, target) => (file, repo / target) }
       // First, remove 'stale' files.
-      cleanSiteForRealz(repo, git, s)
+      cleanSiteForRealz(repo, git, s, incl, excl)
       // Now copy files.
       IO.copy(betterMappings)
       if(noJekyll) IO.touch(repo / ".nojekyll")
       repo
     }
 
-    private def cleanSite0 = (updatedRepository, GitKeys.gitRunner, streams) map { (dir, git, s) =>
-      cleanSiteForRealz(dir, git, s)
+    private def cleanSite0 = (updatedRepository, GitKeys.gitRunner, streams, includeFilter in cleanSite, excludeFilter in cleanSite) map { (dir, git, s, incl, excl) =>
+      cleanSiteForRealz(dir, git, s, incl, excl)
     }
-    private def cleanSiteForRealz(dir: File, git: GitRunner, s: TaskStreams): Unit = {
-      val toClean = IO.listFiles(dir).filterNot(_.getName == ".git").map(_.getAbsolutePath).toList
+    private def cleanSiteForRealz(dir: File, git: GitRunner, s: TaskStreams, incl: FileFilter, excl: FileFilter): Unit = {
+      val toClean = IO.listFiles(dir)
+          .filter(f ⇒ f.getName != ".git" && incl.accept(f) && !excl.accept(f)).map(_.getAbsolutePath).toList
       if(!toClean.isEmpty)
         git(("rm" :: "-r" :: "-f" :: "--ignore-unmatch" :: toClean) :_*)(dir, s.log)
       ()
