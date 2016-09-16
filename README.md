@@ -128,6 +128,27 @@ Here's an example `src/site/index.html` you can use as a starting point:
 </html>
 ```
 
+## Protecting Existing Files
+The default behaviour of sbt-ghpages is to remove all existing files in the Github Pages repository
+prior to publishing current pages. sbt-ghpages supports customisation of this behaviour via the provided
+`includeFilter in cleanSite` and/or `excludeFilter in cleanSite` setting keys.
+
+sbt-ghpages will only delete files which are matched by the FileFilter specified by the `includeFilter in cleanSite`
+setting key AND are not matched by the FileFilter specified by the `excludeFilter in cleanSite` key.
+
+For example, to prevent sbt-ghpages from deleting the "CNAME" file located at the root of your site, and any file
+named "versions.html", add the following to your build.sbt:
+
+```scala
+excludeFilter in GhPagesKeys.cleanSite :=
+  new FileFilter{
+    def accept(f: File) = (GhPagesKeys.repository.value / "CNAME").getCanonicalPath == f.getCanonicalPath
+  } || "versions.html"
+```
+
+For more information on creating more complex filters, please refer to the [sbt FileFilter documentation](http://www.scala-sbt.org/0.13/docs/Paths.html#File+Filters).
+
+
 ## LICENSE ##
 
 Copyright (c) 2008, 2009, 2010, 2011 Josh Suereth, Steven Blundy, Josh Cough, Mark Harrah, Stuart Roebuck, Tony Sloane, Vesa Vilhonen, Jason Zaugg
