@@ -12,6 +12,7 @@ object SbtGhPages extends Plugin {
   object GhPagesKeys {
     lazy val repository = SettingKey[File]("ghpages-repository", "sandbox environment where git project ghpages branch is checked out.")
     lazy val ghpagesNoJekyll = SettingKey[Boolean]("ghpages-no-jekyll", "If this flag is set, ghpages will automatically generate a .nojekyll file to prevent github from running jekyll on pushed sites.")
+    lazy val ghpagesBranch = SettingKey[String]("ghpages-branch", "Name of the git branch in which to store ghpages content. Defaults to gh-pages.")
     lazy val updatedRepository = TaskKey[File]("ghpages-updated-repository", "Updates the local ghpages branch on the sandbox repository.")
     // Note:  These are *only* here in the event someone wants to completely bypass the sbt-site plugin.
     lazy val privateMappings = mappings in synchLocal
@@ -28,12 +29,13 @@ object SbtGhPages extends Plugin {
     lazy val settings: Seq[Setting[_]] = Seq(
       //example: gitRemoteRepo := "git@github.com:jsuereth/scala-arm.git",
       ghpagesNoJekyll := true,
+      ghpagesBranch := "gh-pages",
       repository := {
         val buildHash: String =
           Hash.toHex(Hash.apply(sbt.Keys.thisProjectRef.value.build.toASCIIString))
         file(System.getProperty("user.home")) / ".sbt" / "ghpages" / buildHash /  organization.value / name.value
       },
-      gitBranch in updatedRepository <<= gitBranch ?? Some("gh-pages"),
+      gitBranch in updatedRepository := gitBranch.?.value getOrElse Some(ghpagesBranch.value),
       updatedRepository <<= updatedRepo(repository, gitRemoteRepo, gitBranch in updatedRepository),
       pushSite <<= pushSite0,
       privateMappings <<= siteMappings,
