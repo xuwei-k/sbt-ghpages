@@ -1,0 +1,38 @@
+### GhpagesPlugin
+
+sbt-ghpages 0.6.0 migrates the plugin to AutoPlugin.
+
+    lazy val root = (project in file("."))
+      .enablePlugins(GhpagesPlugin)
+
+Following the Plugin Best Practices guide, the key names are now prefixed with `ghpages`.
+Note that previously keys were wrapped in `GhPagesKeys` object.
+For example, `GhPagesKeys.repository` is now called `ghpagesRepository`.
+
+To import the keys in `project/*.scala`, use the following import clause:
+
+    import com.typesafe.sbt.sbtghpages.GhpagesPlugin, GhpagesPlugin.autoImport._
+
+The migration was contributed as [#18][18] by [@arashi01][@arashi01], [#30][30] by [@nrinaudo][@nrinaudo], and [#31][31] by [@eed3si9n][@eed3si9n]
+
+### ghpagesBranch setting
+
+`ghpagesBranch` contains the name of the branch in which to put site data.
+The purpose of this setting is to let people use sbt-ghpages for GitLab etc with very little additional configuration.
+[#29][29] by [@nrinaudo][@nrinaudo]
+
+### includeFilter in ghpagesCleanSite
+
+`ghpagesCleanSite` now respects `includeFilter` and `excludeFilter` to protect existing site.
+This is useful when sbt-ghpages is responsible for a versioned slice of the web site.
+See [Protecting Existing Files](https://github.com/sbt/sbt-ghpages#protecting-existing-files) for more details.
+[#17][17] by [@arashi01][@arashi01]
+
+  [17]: https://github.com/sbt/sbt-ghpages/pull/17
+  [18]: https://github.com/sbt/sbt-ghpages/pull/18
+  [29]: https://github.com/sbt/sbt-ghpages/pull/29
+  [30]: https://github.com/sbt/sbt-ghpages/pull/30
+  [31]: https://github.com/sbt/sbt-ghpages/pull/31
+  [@arashi01]: https://github.com/arashi01
+  [@nrinaudo]: https://github.com/nrinaudo
+  [@eed3si9n]: https://github.com/eed3si9n

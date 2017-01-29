@@ -20,7 +20,7 @@ the web with GitHub Pages where it will be served at
 
 *Note, sbt-ghpages now requires the use of sbt version 0.13.5 or greater.*
 
-Create a `project/plugins.sbt` file that looks like the following:
+Create a `project/ghpages.sbt` file that looks like the following:
 
 ```scala
 addSbtPlugin("com.typesafe.sbt" % "sbt-ghpages" % "0.5.4")
@@ -32,7 +32,7 @@ your github repository (for more information on enabling and disabling sbt plugi
 see the [sbt plugin documentation](http://www.scala-sbt.org/0.13/docs/Using-Plugins.html#Enabling+and+disabling+auto+plugins)):
 
 ```scala
-enablePlugins(GhPagesPlugin)
+enablePlugins(GhpagesPlugin)
 
 git.remoteRepo := "git@github.com:{your username}/{your project}.git"
 ```
@@ -40,9 +40,9 @@ git.remoteRepo := "git@github.com:{your username}/{your project}.git"
 
 sbt-ghpages provides the following optional setting keys for use in your `build.sbt` file:
 
-- `GhPages.repository` - Location of the sandbox repository to be used to check out the gh-pages branch.
-- `GhPages.noJekyll` - If set to true will cause a .nojekyll file to be generated, to prevent GitHub from running Jekyll on pushed sites.
-- `GhPages.branch` - Name of the branch in which to store static files. Defaults to gh-pages.
+- `ghpagesRepository` - Location of the sandbox repository to be used to check out the gh-pages branch.
+- `ghpagesNoJekyll` - If set to true will cause a .nojekyll file to be generated, to prevent GitHub from running Jekyll on pushed sites.
+- `ghpagesBranch` - Name of the branch in which to store static files. Defaults to gh-pages.
 
 
 ## Initializing the gh-pages branch ##
@@ -152,9 +152,9 @@ For example, to prevent sbt-ghpages from deleting the "CNAME" file located at th
 named "versions.html", add the following to your build.sbt:
 
 ```scala
-excludeFilter in GhPagesKeys.cleanSite :=
+excludeFilter in ghpagesCleanSite :=
   new FileFilter{
-    def accept(f: File) = (GhPagesKeys.repository.value / "CNAME").getCanonicalPath == f.getCanonicalPath
+    def accept(f: File) = (ghpagesRepository.value / "CNAME").getCanonicalPath == f.getCanonicalPath
   } || "versions.html"
 ```
 
