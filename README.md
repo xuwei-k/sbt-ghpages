@@ -23,10 +23,10 @@ the web with GitHub Pages where it will be served at
 Create a `project/ghpages.sbt` file that looks like the following:
 
 ```scala
-addSbtPlugin("com.typesafe.sbt" % "sbt-ghpages" % "0.5.4")
+addSbtPlugin("com.typesafe.sbt" % "sbt-ghpages" % "0.6.0")
 ```
 
-Then in your `build.sbt` file, simply enable the GhPagesPlugin via an
+Then in your `build.sbt` file, simply enable the GhpagesPlugin via an
 `enablePlugins` statement for your project, and specify the location of
 your github repository (for more information on enabling and disabling sbt plugins,
 see the [sbt plugin documentation](http://www.scala-sbt.org/0.13/docs/Using-Plugins.html#Enabling+and+disabling+auto+plugins)):
@@ -143,10 +143,11 @@ Here's an example `src/site/index.html` you can use as a starting point:
 ## Protecting Existing Files
 The default behaviour of sbt-ghpages is to remove all existing files in the Github Pages repository
 prior to publishing current pages. sbt-ghpages supports customisation of this behaviour via the provided
-`includeFilter in cleanSite` and/or `excludeFilter in cleanSite` setting keys.
+`includeFilter in ghpagesCleanSite` and/or `excludeFilter in ghpagesCleanSite` setting keys.
 
-sbt-ghpages will only delete files which are matched by the FileFilter specified by the `includeFilter in cleanSite`
-setting key AND are not matched by the FileFilter specified by the `excludeFilter in cleanSite` key.
+sbt-ghpages will only delete files which are matched by the FileFilter specified by the
+`includeFilter in ghpagesCleanSite` setting key AND are not matched by the FileFilter specified by the
+`excludeFilter in ghpagesCleanSite` key.
 
 For example, to prevent sbt-ghpages from deleting the "CNAME" file located at the root of your site, and any file
 named "versions.html", add the following to your build.sbt:
