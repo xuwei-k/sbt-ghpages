@@ -1,5 +1,10 @@
 lazy val root = (project in file("."))
   .settings(
+    ScriptedPlugin.scriptedSettings,
+    scriptedLaunchOpts += ("-Dplugin.version=" + version.value),
+    scriptedLaunchOpts ++= sys.process.javaVmArguments.filter(
+      a => Seq("-Xmx", "-Xms", "-XX", "-Dsbt.log.noformat").exists(a.startsWith)
+    ),
     sbtPlugin := true,
     name := "sbt-ghpages",
     organization := "com.typesafe.sbt",
