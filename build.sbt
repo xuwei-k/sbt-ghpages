@@ -10,6 +10,16 @@ lazy val root = (project in file("."))
     organization := "com.typesafe.sbt",
     version := "0.6.2-SNAPSHOT",
     resolvers += "jgit-repo" at "http://download.eclipse.org/jgit/maven",
-    addSbtPlugin("com.typesafe.sbt" % "sbt-git" % "0.9.3"),
-    addSbtPlugin("com.typesafe.sbt" % "sbt-site" % "1.2.1")
+    libraryDependencies ++= Seq(
+      Defaults.sbtPluginExtra(
+        "com.typesafe.sbt" % "sbt-git" % "0.9.3",
+        (sbtBinaryVersion in pluginCrossBuild).value,
+        (scalaBinaryVersion in pluginCrossBuild).value
+      ),
+      Defaults.sbtPluginExtra(
+        "com.typesafe.sbt" % "sbt-site" % "1.3.0",
+        (sbtBinaryVersion in pluginCrossBuild).value,
+        (scalaBinaryVersion in pluginCrossBuild).value
+      )
+    )
   )

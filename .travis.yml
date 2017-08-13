@@ -8,7 +8,11 @@ cache:
 before_cache:
 - find $HOME/.sbt -name "*.lock" | xargs rm
 - find $HOME/.ivy2 -name "ivydata-*.properties" | xargs rm
-jdk:
-- oraclejdk7
 script:
-- sbt scripted
+- sbt "^^ ${SBT_VERSION}" scripted
+matrix:
+  include:
+  - jdk: oraclejdk7
+    env: SBT_VERSION="0.13.16"
+  - jdk: oraclejdk8
+    env: SBT_VERSION="1.0.0"
