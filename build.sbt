@@ -8,7 +8,7 @@ lazy val root = (project in file("."))
     sbtPlugin := true,
     name := "sbt-ghpages",
     organization := "com.typesafe.sbt",
-    version := "0.6.2-SNAPSHOT",
+    version := "0.6.2",
     resolvers += "jgit-repo" at "http://download.eclipse.org/jgit/maven",
     libraryDependencies ++= Seq(
       Defaults.sbtPluginExtra(
