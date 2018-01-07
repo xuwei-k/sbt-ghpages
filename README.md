@@ -84,7 +84,7 @@ Simply run the `ghpagesPushSite` task to publish your website.
 ### How it works
 
 Behind the scenes, `sbt-ghpages` will create a new "sandbox" clone of your Git
-repository, with its location determined by the `GhPages.repository` setting key
+repository, with its location determined by the `ghpagesRepository` setting key
 (by default set to a directory under `~/.sbt/ghpages`). Whenever you run `sbt ghpagesPushSite`
 it will copy your site content into that sandbox repository, commit it to the
 `gh-pages` branch, and push the branch to GitHub.
