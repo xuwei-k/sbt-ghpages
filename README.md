@@ -99,7 +99,7 @@ mistakes with dirty or untracked files in your normal working copy clone.
 A common use for `sbt-ghpages` is to automate the publishing of Scaladoc. If you wish to
 use it for this, first ask `sbt-site` to generate your Scaladoc by adding an `enablePlugins` directive
 for the `SiteScaladocPlugin` (included in sbt-site) to your `build.sbt` see the
-[sbt-site documentation](https://github.com/sbt/sbt-site#scaladoc-apis) for more information:
+[sbt-site documentation](https://www.scala-sbt.org/sbt-site/api-documentation.html) for more information:
 
 ```scala
 enablePlugins(SiteScaladocPlugin)
