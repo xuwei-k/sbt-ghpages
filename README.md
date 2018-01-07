@@ -31,7 +31,7 @@ addSbtPlugin("com.typesafe.sbt" % "sbt-ghpages" % "0.6.2")
 Then in your `build.sbt` file, simply enable the GhpagesPlugin via an
 `enablePlugins` statement for your project, and specify the location of
 your github repository (for more information on enabling and disabling sbt plugins,
-see the [sbt plugin documentation](http://www.scala-sbt.org/0.13/docs/Using-Plugins.html#Enabling+and+disabling+auto+plugins)):
+see the [sbt plugin documentation](http://www.scala-sbt.org/1.x/docs/Using-Plugins.html#Enabling+and+disabling+auto+plugins)):
 
 ```scala
 enablePlugins(GhpagesPlugin)
@@ -161,7 +161,7 @@ excludeFilter in ghpagesCleanSite :=
   } || "versions.html"
 ```
 
-For more information on creating more complex filters, please refer to the [sbt FileFilter documentation](http://www.scala-sbt.org/0.13/docs/Paths.html#File+Filters).
+For more information on creating more complex filters, please refer to the [sbt FileFilter documentation](http://www.scala-sbt.org/1.x/docs/Paths.html#File+Filters).
 
 
 ## LICENSE ##
