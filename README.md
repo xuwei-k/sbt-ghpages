@@ -74,7 +74,7 @@ repository][create branch] and push the branch to GitHub. The quick steps are:
 
 Now that this is done, you can begin using the plugin with sbt.
 
-[create branch]: https://help.github.com/articles/creating-project-pages-manually/
+[create branch]: https://help.github.com/articles/creating-project-pages-using-the-command-line/
 
 
 ## Publishing your site ##
