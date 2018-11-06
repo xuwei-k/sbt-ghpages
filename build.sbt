@@ -12,12 +12,12 @@ lazy val root = (project in file("."))
     version := "0.6.3-SNAPSHOT",
     libraryDependencies ++= Seq(
       Defaults.sbtPluginExtra(
-        "com.typesafe.sbt" % "sbt-git" % "0.9.3",
+        "com.typesafe.sbt" % "sbt-git" % "1.0.0",
         (sbtBinaryVersion in pluginCrossBuild).value,
         (scalaBinaryVersion in pluginCrossBuild).value
       ),
       Defaults.sbtPluginExtra(
-        "com.typesafe.sbt" % "sbt-site" % "1.3.0",
+        "com.typesafe.sbt" % "sbt-site" % "1.3.2",
         (sbtBinaryVersion in pluginCrossBuild).value,
         (scalaBinaryVersion in pluginCrossBuild).value
       )
