@@ -17,7 +17,7 @@ lazy val root = (project in file("."))
         (scalaBinaryVersion in pluginCrossBuild).value
       ),
       Defaults.sbtPluginExtra(
-        "com.typesafe.sbt" % "sbt-site" % "1.3.0",
+        "com.typesafe.sbt" % "sbt-site" % "1.3.2",
         (sbtBinaryVersion in pluginCrossBuild).value,
         (scalaBinaryVersion in pluginCrossBuild).value
       )
