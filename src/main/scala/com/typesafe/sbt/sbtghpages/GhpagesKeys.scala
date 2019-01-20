@@ -5,6 +5,7 @@ import sbt._
 import Keys._
 
 trait GhpagesKeys {
+  lazy val ghpagesCommitOptions = settingKey[Seq[String]]("commit options")
   lazy val ghpagesRepository = settingKey[File]("sandbox environment where git project ghpages branch is checked out.")
   lazy val ghpagesBranch = settingKey[String]("Name of the git branch in which to store ghpages content. Defaults to gh-pages.")
   lazy val ghpagesNoJekyll = settingKey[Boolean]("If this flag is set, ghpages will automatically generate a .nojekyll file to prevent github from running jekyll on pushed sites.")
