@@ -10,7 +10,7 @@ lazy val root = (project in file("."))
     crossSbtVersions += "1.2.8",
     name := "sbt-ghpages",
     organization := "com.typesafe.sbt",
-    version := "0.6.3-SNAPSHOT",
+    version := "0.6.3",
     libraryDependencies ++= Seq(
       Defaults.sbtPluginExtra(
         "com.typesafe.sbt" % "sbt-git" % "0.9.3",
