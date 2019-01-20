@@ -7,6 +7,7 @@ lazy val root = (project in file("."))
       a => Seq("-Xmx", "-Xms", "-XX", "-Dsbt.log.noformat").exists(a.startsWith)
     ),
     sbtPlugin := true,
+    crossSbtVersions += "1.2.8",
     name := "sbt-ghpages",
     organization := "com.typesafe.sbt",
     version := "0.6.3-SNAPSHOT",
