@@ -1,7 +1,5 @@
 # sbt-ghpages #
 
-[![Build Status](https://travis-ci.org/sbt/sbt-ghpages.svg?branch=master)](https://travis-ci.org/sbt/sbt-ghpages)
-
 The GitHub Pages plugin for sbt makes it simple to publish a project website to
 [GitHub Pages](https://pages.github.com/).
 
